@@ -16,6 +16,8 @@ namespace DodgeGame
         Rectangle hero = new Rectangle(50, 185, 25, 25);
         int heroSpeed = 6;
 
+        Rectangle end = new Rectangle(599, 1, 5, 400);
+
         List<Rectangle> obstacleL = new List<Rectangle>();
         List<Rectangle> obstacleR = new List<Rectangle>();
 
@@ -38,9 +40,27 @@ namespace DodgeGame
         SolidBrush blueBrush = new SolidBrush(Color.CornflowerBlue);
         SolidBrush greenBrush = new SolidBrush(Color.SeaGreen);
 
+        string gameState = "waiting";
+
         public Form1()
         {
             InitializeComponent();
+        }
+
+        public void GameInitialize()
+        {
+            titleLabel.Text = "";
+            subTitleLabel.Text = "";
+
+            gameTimer.Enabled = true;
+            gameState = "running";
+            leftCounter = 0;
+            rightCounter = 0;
+            obstacleL.Clear();
+            obstacleR.Clear();
+
+            hero.X = 50;
+            hero.Y = 185;
         }
 
         private void Form1_KeyDown(object sender, KeyEventArgs e)
@@ -58,6 +78,18 @@ namespace DodgeGame
                     break;
                 case Keys.D:
                     dDown = true;
+                    break;
+                case Keys.Space:
+                    if (gameState == "waiting" || gameState == "over" || gameState == "win")
+                    {
+                        GameInitialize();
+                    }
+                    break;
+                case Keys.Escape:
+                    if (gameState == "waiting" || gameState == "over" || gameState == "win")
+                    {
+                        Application.Exit();
+                    }
                     break;
             }
         }
@@ -161,6 +193,7 @@ namespace DodgeGame
                 if (hero.IntersectsWith(obstacleL[i]))
                 {
                     gameTimer.Enabled = false;
+                    gameState = "over";
                 }
             }
 
@@ -169,13 +202,15 @@ namespace DodgeGame
                 if (hero.IntersectsWith(obstacleR[i]))
                 {
                     gameTimer.Enabled = false;
+                    gameState = "over";
                 }
             }
 
             //stop if hero makes it to the end!!
-            if (hero.X == this.Width - hero.Width)
+            if (hero.IntersectsWith(end))
             {
                 gameTimer.Enabled = false;
+                gameState = "win";
             }
 
             Refresh();
@@ -183,18 +218,37 @@ namespace DodgeGame
 
         private void Form1_Paint(object sender, PaintEventArgs e)
         {
-            //draw hero
-            e.Graphics.FillRectangle(blueBrush, hero);
-
-            //draw obstacles 
-            for (int i = 0; i < obstacleL.Count(); i++)
+            if (gameState == "waiting")
             {
-                e.Graphics.FillRectangle(greenBrush, obstacleL[i]);
+                titleLabel.Text = "dodge runner 3000!!";
+                subTitleLabel.Text = "Press Space Bar to Start or Escape to Exit";
             }
 
-            for (int i = 0; i < obstacleR.Count(); i++)
+            else if (gameState == "running")
             {
-                e.Graphics.FillRectangle(greenBrush, obstacleR[i]);
+                //draw hero
+                e.Graphics.FillRectangle(blueBrush, hero);
+
+                //draw obstacles 
+                for (int i = 0; i < obstacleL.Count(); i++)
+                {
+                    e.Graphics.FillRectangle(greenBrush, obstacleL[i]);
+                }
+
+                for (int i = 0; i < obstacleR.Count(); i++)
+                {
+                    e.Graphics.FillRectangle(greenBrush, obstacleR[i]);
+                }
+            }
+            else if (gameState == "over")
+            {
+                titleLabel.Text = "you lose :(";
+                subTitleLabel.Text = "\nPress Space Bar to Start or Escape to Exit";
+            }
+            else if (gameState == "win")
+            {
+                titleLabel.Text = "you win :D";
+                subTitleLabel.Text = "\nPress Space Bar to Start or Escape to Exit";
             }
         }
     }
